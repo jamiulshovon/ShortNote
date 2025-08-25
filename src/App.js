@@ -2,11 +2,27 @@ import { useState } from "react";
 
 function App() {
   const [title, setTitle] = useState("");
-  const [notes, setNotes] = useState([
-    { id: 1, title: "Note 1" },
-    { id: 2, title: "Note 2" },
-  ]);
+  const [notes, setNotes] = useState([]);
+  const [editmode,setEditMode]= useState(false);
 
+  const [editableNote,setEditableNote]=useState(null);
+
+  const setEditModeHandler= (note) =>{
+        setEditMode(true);
+        setEditableNote(note);
+        setTitle(note.title);
+  }
+const updateHandler=()=>{
+  const updatedNotes =notes.map(item =>{
+      if (item.id === editableNote.id) {
+        return {...item, title : title}
+      }
+      return item;
+  });
+  setNotes(updatedNotes);
+  setEditMode(false);
+  setTitle("");
+}
   const setTitleHandler = (e) => {
     setTitle(e.target.value);
   };
@@ -17,16 +33,17 @@ function App() {
     if (title.trim() === "") {
       return alert("Please provide a valid title");
     }
-
-    const newNote = {
+      editmode ? updateHandler() : createHandler();
+  };
+const createHandler=()=>{
+  const newNote = {
       id: Date.now() + "",
       title: title,
     };
 
     setNotes([newNote, ...notes]);
     setTitle(""); 
-  };
-
+}
   const removeHandler = (noteId) => {
     const updatedNotes = notes.filter((item) => item.id !== noteId);
     setNotes(updatedNotes);
@@ -43,7 +60,7 @@ function App() {
           value={title}
           onChange={setTitleHandler}
         />
-        <button type="submit">Add Note</button>
+        <button type="submit">{editmode ? "Update Note":"Add Note"}</button>
       </form>
 
       
@@ -53,7 +70,7 @@ function App() {
           {notes.map((note) => (
             <li key={note.id}>
               <span>{note.title}</span>
-              <button>Edit</button>
+              <button onClick={()=>setEditModeHandler(note)}>Edit</button>
               <button onClick={() => removeHandler(note.id)}>Delete</button>
             </li>
           ))}
